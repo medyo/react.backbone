@@ -50,6 +50,13 @@
         modelOrCollection.off(null, null, component);
     };
 
+    var updatable = function (component){
+        if (component.shouldComponentUpdate !== undefined && component.shouldComponentUpdate !== null){
+            return component.shouldComponentUpdate();
+        }
+        return true; 
+    }
+
     React.BackboneMixin = function(optionsOrPropName, customChangeOptions) {
       var propName, modelOrCollection;
       if (typeof optionsOrPropName === "object") {
@@ -68,8 +75,11 @@
 
       return {
         componentDidMount: function() {
-            // Whenever there may be a change in the Backbone data, trigger a reconcile.
-            subscribe(this, modelOrCollection(this.props), customChangeOptions);
+            if (updatable(this)){
+                // Whenever there may be a change in the Backbone data, trigger a reconcile.
+                subscribe(this, modelOrCollection(this.props), customChangeOptions);
+            }
+            
         },
 
         componentWillReceiveProps: function(nextProps) {
@@ -77,9 +87,10 @@
                 return;
             }
 
-            unsubscribe(this, modelOrCollection(this.props));
-            subscribe(this, modelOrCollection(nextProps), customChangeOptions);
-
+            if (updatable(this)){
+                unsubscribe(this, modelOrCollection(this.props));
+                subscribe(this, modelOrCollection(nextProps), customChangeOptions);
+            }
             if (typeof this.componentWillChangeModel === 'function') {
                 this.componentWillChangeModel();
             }
@@ -97,7 +108,9 @@
 
         componentWillUnmount: function() {
             // Ensure that we clean up any dangling references when the component is destroyed.
-            unsubscribe(this, modelOrCollection(this.props));
+            if (updatable(this)){
+                unsubscribe(this, modelOrCollection(this.props));
+            }
         }
       };
     };
