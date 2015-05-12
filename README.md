@@ -126,7 +126,7 @@ React.BackboneMixin({
 });
 ```
 
-If in you need same cases to control whatever a change should re-render the view or not.   
+If in same cases you need to control whatever a change should re-render the view or not.   
 ```javascript
 var UserViewComponent = React.createBackboneClass({
     shouldComponentUpdate: function() {
