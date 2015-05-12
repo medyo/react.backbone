@@ -26,7 +26,7 @@
     };
 
     var updatable = function (component){
-        if (component.shouldComponentUpdate !== undefined && component.shouldComponentUpdate !== null){
+        if (component.shouldComponentUpdate !== null){
             return component.shouldComponentUpdate();
         }
         return true; 
