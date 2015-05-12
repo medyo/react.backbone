@@ -126,6 +126,22 @@ React.BackboneMixin({
 });
 ```
 
+If in you need same cases to control whatever a change should re-render the view or not.   
+```javascript
+var UserViewComponent = React.createBackboneClass({
+    shouldComponentUpdate: function() {
+      return this.getModel().previous('name') != this.getModel().get('name');
+    },
+    render: function() {
+        return (
+          <div>
+              <h1>{this.getModel().get("name")}</h1>
+          </div>
+        );
+    }
+});
+```
+
 If your Collection or Model class does not inherit directly from Backbone.Model 
 or Backbone.Collection, you may customize the behavior on a library level by
 overriding the React.BackboneMixin.ConsiderAsCollection function.
