@@ -72,8 +72,7 @@ describe('react.backbone', function() {
     });
 
     describe("with shouldComponentUpdate", function() {
-      it('doesnt auto-update if shouldComponentUpdate is false', function() {
-        var UserView = React.createBackboneClass({
+      var UserView = React.createBackboneClass({
           shouldComponentUpdate: function(){
             return this.getModel().previous('name') != this.getModel().get('name');
           },
@@ -84,7 +83,10 @@ describe('react.backbone', function() {
                 </div>
               );
           }
-        });
+      });
+
+      it('doesnt auto-update if shouldComponentUpdate is false', function() {
+        
         var user = new Backbone.Model({name: "Mehdi", age: "80"});
         var userViewRef = React.createFactory(UserView)({model: user});
         var userView = TestUtils.renderIntoDocument(userViewRef);
@@ -93,6 +95,22 @@ describe('react.backbone', function() {
         var header = TestUtils.findRenderedDOMComponentWithTag(userView, 'h1');
         expect(header.getDOMNode().textContent).toEqual('Mehdi 80');
       });
+
+      it('forces update even if shouldComponentUpdate is false', function() {
+        var user = new Backbone.Model({name: "Mehdi", age: "80"});
+        var userViewRef = React.createFactory(UserView)({model: user});
+        var userView = TestUtils.renderIntoDocument(userViewRef);
+        user.set("age", "100");
+
+        var header = TestUtils.findRenderedDOMComponentWithTag(userView, 'h1');
+        expect(header.getDOMNode().textContent).toEqual('Mehdi 80');
+
+        userView.forceUpdate()
+        expect(header.getDOMNode().textContent).toEqual('Mehdi 100');
+      });
+
+        
+
 
     });
   });
@@ -142,7 +160,7 @@ describe('react.backbone', function() {
       it('doesnt auto-update if shouldComponentUpdate is false', function() {
 
         var UsersListView = React.createBackboneClass({
-          shouldComponentUpdate: function(nextProps, nextState){
+          shouldComponentUpdate: function(){
             return false;
           },
           render: function() {
