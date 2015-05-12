@@ -25,6 +25,13 @@
         updateScheduler: _.identity
     };
 
+    var updatable = function (component){
+        if (component.shouldComponentUpdate !== undefined && component.shouldComponentUpdate !== null){
+            return component.shouldComponentUpdate();
+        }
+        return true; 
+    }
+
     var subscribe = function(component, modelOrCollection, customChangeOptions) {
         if (!modelOrCollection) {
             return;
@@ -33,7 +40,7 @@
         var behavior = React.BackboneMixin.ConsiderAsCollection(modelOrCollection) ? collectionBehavior : modelBehavior;
 
         var triggerUpdate = behavior.updateScheduler(function() {
-            if (component.isMounted()) {
+            if (component.isMounted() && updatable(component)) {
                 (component.onModelChange || component.forceUpdate).call(component);
             }
         });
@@ -49,13 +56,6 @@
 
         modelOrCollection.off(null, null, component);
     };
-
-    var updatable = function (component){
-        if (component.shouldComponentUpdate !== undefined && component.shouldComponentUpdate !== null){
-            return component.shouldComponentUpdate();
-        }
-        return true; 
-    }
 
     React.BackboneMixin = function(optionsOrPropName, customChangeOptions) {
       var propName, modelOrCollection;
@@ -75,11 +75,8 @@
 
       return {
         componentDidMount: function() {
-            if (updatable(this)){
-                // Whenever there may be a change in the Backbone data, trigger a reconcile.
-                subscribe(this, modelOrCollection(this.props), customChangeOptions);
-            }
-            
+            // Whenever there may be a change in the Backbone data, trigger a reconcile.
+            subscribe(this, modelOrCollection(this.props), customChangeOptions);
         },
 
         componentWillReceiveProps: function(nextProps) {
@@ -87,10 +84,9 @@
                 return;
             }
 
-            if (updatable(this)){
-                unsubscribe(this, modelOrCollection(this.props));
-                subscribe(this, modelOrCollection(nextProps), customChangeOptions);
-            }
+            unsubscribe(this, modelOrCollection(this.props));
+            subscribe(this, modelOrCollection(nextProps), customChangeOptions);
+            
             if (typeof this.componentWillChangeModel === 'function') {
                 this.componentWillChangeModel();
             }
@@ -108,9 +104,8 @@
 
         componentWillUnmount: function() {
             // Ensure that we clean up any dangling references when the component is destroyed.
-            if (updatable(this)){
-                unsubscribe(this, modelOrCollection(this.props));
-            }
+            unsubscribe(this, modelOrCollection(this.props));
+            
         }
       };
     };
